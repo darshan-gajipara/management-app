@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
+import { withBgImage } from "@/lib/withbgimage";
 
 const registerSchema = yup.object({
     firstName: yup.string().required("FirstName is required "),
@@ -30,7 +30,7 @@ const registerSchema = yup.object({
 
 })
 type RegisterForm = yup.InferType<typeof registerSchema>
-export default function RegisterPage() {
+function RegisterPage() {
     const router = useRouter();
 
     const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen ">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle className="text-center text-2xl">Register</CardTitle>
@@ -175,3 +175,5 @@ export default function RegisterPage() {
         </div>
     );
 }
+
+export default withBgImage(RegisterPage);

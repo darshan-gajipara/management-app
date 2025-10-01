@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
@@ -13,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signIn } from "next-auth/react";
+import { withBgImage } from "@/lib/withbgimage";
 
 const loginSchema = yup.object({
     email: yup.string().email("Invalid Email formate").required("Email is Required"),
@@ -23,7 +23,7 @@ const loginSchema = yup.object({
 })
 type LoginForm = yup.InferType<typeof loginSchema>
 
-export default function LoginPage() {
+function LoginPage() {
     const router = useRouter();
     const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
         resolver: yupResolver(loginSchema)
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="flex items-center justify-center min-h-screen">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle className="text-center text-2xl">Login</CardTitle>
@@ -131,3 +131,5 @@ export default function LoginPage() {
         </div>
     );
 }
+
+export default withBgImage(LoginPage);

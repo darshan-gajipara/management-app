@@ -1,5 +1,5 @@
 // /app/store/useReportsStore.ts
-import { addReport, deleteReport, fetchReports, updateReport } from "@/app/dashboard/reportService";
+import { addReport, deleteReport, fetchReports, updateReport } from "@/lib/services/reportService";
 import { create } from "zustand";
 import { toast } from "sonner"
 

@@ -57,7 +57,7 @@ function RegisterPage() {
             const result = await res.json();
             console.log("Login success:", result);
             localStorage.setItem("token", result?.JWT_Token)
-            router.push("/dashboard/reports");
+            router.push("/dashboard");
         } catch (err) {
             console.error("Error logging in:", err);
         }
@@ -66,11 +66,11 @@ function RegisterPage() {
     };
 
     const handleGoogleLogin = async () => {
-        await signIn("google", { callbackUrl: '/dashboard/reports' }) // Redirect after login
+        await signIn("google", { callbackUrl: '/dashboard' }) // Redirect after login
     };
 
     const handleGitHubLogin = async () => {
-        await signIn("github", { callbackUrl: "/dashboard/reports" });
+        await signIn("github", { callbackUrl: "/dashboard" });
     };
 
 

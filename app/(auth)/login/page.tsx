@@ -40,18 +40,18 @@ function LoginPage() {
 
             const result = await res.json();
             localStorage.setItem("token", result?.JWT_Token);
-            router.push("/dashboard/reports");
+            router.push("/dashboard");
         } catch (err) {
             console.error("Error logging in:", err);
         }
     };
 
     const handleGoogleLogin = async () => {
-        await signIn("google", { callbackUrl: '/dashboard/reports' })
+        await signIn("google", { callbackUrl: '/dashboard' })
     };
 
     const handleGitHubLogin = async () => {
-        await signIn("github", { callbackUrl: "/dashboard/reports" });
+        await signIn("github", { callbackUrl: "/dashboard" });
     };
 
 

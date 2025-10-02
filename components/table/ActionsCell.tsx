@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Report, useReportsStore } from "@/store/useReportStore"
 import { useRef } from "react"
-import CreateReportComponent from "@/app/dashboard/create-report/page"
 import {
     Dialog,
     DialogClose,
@@ -20,6 +19,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import CreateReportComponent from "../report/create-report/page";
 
 // Create a small React component for the Actions cell
 export const ActionsCell = ({ row }: { row: Report }) => {

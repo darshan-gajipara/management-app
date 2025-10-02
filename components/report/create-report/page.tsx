@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useForm, Controller } from "react-hook-form";
-import { Loader } from "lucide-react";
 import { useReportsStore } from "@/store/useReportStore";
 import { useEffect } from "react";
 import axios from "axios";
+import LoaderComponent from "@/components/loader/page";
 
 type ReportForm = {
   title: string;
@@ -70,7 +70,7 @@ export default function CreateReportComponent({ reportID, closeBtnRef }: Props) 
 
   return (
     <div className="w-full">
-      {loading && <Loader size={32} className="mx-auto mb-4 animate-spin" />}
+      {loading && <LoaderComponent />}
       <CardHeader className="pb-4">
         {/* <CardTitle>Create Report</CardTitle> */}
       </CardHeader>

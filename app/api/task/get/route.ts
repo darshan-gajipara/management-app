@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       start.setHours(0, 0, 0, 0);
       const end = new Date(createdAt);
       end.setHours(23, 59, 59, 999);
-      query.createdAt = { $gte: start, $lte: end };
+      query.scheduledDate = { $gte: start, $lte: end };
     }
 
     // 🔹 Await the query result

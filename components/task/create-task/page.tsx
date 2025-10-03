@@ -35,9 +35,10 @@ type TaskForm = {
 type Props = {
     closeBtnRef?: React.RefObject<HTMLButtonElement | null>;
     taskID?: string;
+    date?: string;
 };
 
-export default function CreateTaskComponent({ taskID, closeBtnRef }: Props) {
+export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props) {
     const { addtask, getAllTasks, updateTask, loading } = useTaskStore();
     const [open, setOpen] = useState(false);
     const {
@@ -86,7 +87,7 @@ export default function CreateTaskComponent({ taskID, closeBtnRef }: Props) {
         } else {
             await updateTask(taskID!, payload);
         }
-        await getAllTasks();
+        await getAllTasks("", 1, 10, date ? new Date(date) : undefined);
 
         if (closeBtnRef?.current) {
             closeBtnRef.current.click();

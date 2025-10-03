@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Table, LogOut, Menu, CalendarCheck, CalendarCheck2 } from "lucide-react";
+import { LayoutDashboard, Table, LogOut, Menu, CalendarCheck, CalendarCheck2, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button"; // shadcn Button
 import { ScrollArea } from "@/components/ui/scroll-area"; // optional for sidebar scrolling
 import { signOut } from "next-auth/react";
@@ -122,6 +122,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </Link>
 
                         <Link
+                            href="/dashboard/settings"
+                            className={cn(
+                                "flex items-center gap-2 rounded-lg px-3 py-2 transition",
+                                pathname === "/dashboard/settings"
+                                    ? "bg-blue-800 text-white"
+                                    : "hover:bg-[#334155] text-gray-300"
+                            )}
+                        >
+                            <CalendarCheck2  size={20} />
+                            {sidebarOpen && <span>Task View</span>}
+                        </Link>
+
+                        <Link
                             href="/dashboard/task/taskInfo"
                             className={cn(
                                 "flex items-center gap-2 rounded-lg px-3 py-2 transition",
@@ -130,9 +143,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     : "hover:bg-[#334155] text-gray-300"
                             )}
                         >
-                            <CalendarCheck2  size={20} />
+                            <ListTodo  size={20} />
                             {sidebarOpen && <span>Task Info</span>}
                         </Link>
+
+                        
                     </nav>
                 </ScrollArea>
             </aside>

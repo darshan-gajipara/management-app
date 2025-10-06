@@ -75,11 +75,13 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
     }, [taskID, setValue]);
 
     const onSubmit = async (data: TaskForm) => {
+        const localDate = new Date(data.scheduledDate);
+        // remove timezone offset effect
+        const correctedDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
+
         const payload = {
             ...data,
-            scheduledDate: data.scheduledDate instanceof Date
-                ? data.scheduledDate.toISOString()
-                : data.scheduledDate,
+            scheduledDate: correctedDate.toISOString(), // now stays as selected day
         };
 
         if (!taskID) {
@@ -87,12 +89,14 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
         } else {
             await updateTask(taskID!, payload);
         }
+
         await getAllTasks("", 1, 10, date ? new Date(date) : undefined);
 
         if (closeBtnRef?.current) {
             closeBtnRef.current.click();
         }
     };
+
 
     return (
         <div className="w-full">

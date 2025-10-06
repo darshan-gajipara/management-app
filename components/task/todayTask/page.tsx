@@ -17,11 +17,11 @@ const statusColors: Record<string, string> = {
 };
 
 export default function TodayTaskComponent() {
-    const { taskResponse:tasks, getAllTasks, loading } = useTaskStore();
+    const { taskResponse: tasks, getAllTasks, loading } = useTaskStore();
     useEffect(() => {
         const today = new Date();
         getAllTasks('', 1, 50, today);
-    },[getAllTasks]);
+    }, [getAllTasks]);
 
     if (loading) {
         return <LoaderComponent />
@@ -31,7 +31,7 @@ export default function TodayTaskComponent() {
         <div className="p-4">
             <Tabs defaultValue="all" className="w-full" >
                 {/* Tabs */}
-                <TabsList className="grid grid-cols-5 gap-2 mb-4 text-white" style={{background:"#1e293b"}}>
+                <TabsList className="grid grid-cols-5 gap-2 mb-4 text-white" style={{ background: "#1e293b" }}>
                     <TabsTrigger className="text-white data-[state=active]:text-black" value="all">All</TabsTrigger>
                     <TabsTrigger className="text-white data-[state=active]:text-black" value="progress">In Progress</TabsTrigger>
                     <TabsTrigger className="text-white data-[state=active]:text-black" value="completed">Completed</TabsTrigger>
@@ -41,33 +41,44 @@ export default function TodayTaskComponent() {
 
                 {/* Tab Contents */}
                 <TabsContent value="all" className="space-y-4">
-                    {tasks?.data.map((task) => (
-                        <TaskCard key={task._id} task={task} />
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tasks?.data.map((task) => (
+                            <TaskCard key={task._id} task={task} />
+                        ))}
+                    </div>
                 </TabsContent>
 
+
                 <TabsContent value="progress" className="space-y-4">
-                    {tasks?.data.filter((t) => t.currentStatus === "In Progress").map((task) => (
-                        <TaskCard key={task._id} task={task} />
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tasks?.data.filter((t) => t.currentStatus === "In Progress").map((task) => (
+                            <TaskCard key={task._id} task={task} />
+                        ))}
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="completed" className="space-y-4">
-                    {tasks?.data.filter((t) => t.currentStatus === "Completed").map((task) => (
-                        <TaskCard key={task._id} task={task} />
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tasks?.data.filter((t) => t.currentStatus === "Completed").map((task) => (
+                            <TaskCard key={task._id} task={task} />
+                        ))}
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="pending" className="space-y-4">
-                    {tasks?.data.filter((t) => t.currentStatus === "To-do" || t.currentStatus === "Pending").map((task) => (
-                        <TaskCard key={task._id} task={task} />
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tasks?.data.filter((t) => t.currentStatus === "To-do" || t.currentStatus === "Pending").map((task) => (
+                            <TaskCard key={task._id} task={task} />
+                        ))}
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="hold" className="space-y-4">
-                    {tasks?.data.filter((t) => t.currentStatus === "On Hold").map((task) => (
-                        <TaskCard key={task._id} task={task} />
-                    ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {tasks?.data.filter((t) => t.currentStatus === "On Hold").map((task) => (
+                            <TaskCard key={task._id} task={task} />
+                        ))}
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

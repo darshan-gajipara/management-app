@@ -150,25 +150,25 @@ export default function DashboardPage() {
 
         <Card className="bg-[#1E1E2F] text-white rounded-2xl shadow-lg">
           <CardHeader>
-            <CardTitle>Latest Users</CardTitle>
+            <CardTitle>Latest Reports</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              {users.map((user, idx) => (
+              {dashboardData?.recentReports.map((report:any, idx:any) => (
                 <li key={idx} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-sm font-medium">{report?.title}</p>
+                    <p className="text-xs text-gray-500">{report?.author}</p>
                   </div>
                   <span
-                    className={`text-xs font-semibold px-2 py-1 rounded ${user.status === "Active"
+                    className={`text-xs font-semibold px-2 py-1 rounded ${report?.status === "Active"
                       ? "bg-green-100 text-green-600"
-                      : user.status === "Pending"
+                      : report.status === "Pending"
                         ? "bg-yellow-100 text-yellow-600"
                         : "bg-red-100 text-red-600"
                       }`}
                   >
-                    {user.status}
+                    {report.status}
                   </span>
                 </li>
               ))}

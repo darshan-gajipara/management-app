@@ -122,10 +122,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </Link>
 
                         <Link
-                            href="/dashboard/settings"
+                            href="/dashboard/taskView"
                             className={cn(
                                 "flex items-center gap-2 rounded-lg px-3 py-2 transition",
-                                pathname === "/dashboard/settings"
+                                pathname === "/dashboard/taskView"
                                     ? "bg-blue-800 text-white"
                                     : "hover:bg-[#334155] text-gray-300"
                             )}

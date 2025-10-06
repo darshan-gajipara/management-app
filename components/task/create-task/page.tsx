@@ -81,7 +81,7 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
 
         const payload = {
             ...data,
-            scheduledDate: correctedDate.toISOString(), // now stays as selected day
+            scheduledDate: correctedDate.toISOString(),
         };
 
         if (!taskID) {

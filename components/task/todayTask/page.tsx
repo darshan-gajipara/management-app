@@ -20,7 +20,7 @@ export default function TodayTaskComponent() {
     const { taskResponse:tasks, getAllTasks, loading } = useTaskStore();
     useEffect(() => {
         const today = new Date();
-        getAllTasks('', 1, 10, today);
+        getAllTasks('', 1, 50, today);
     },[getAllTasks]);
 
     if (loading) {

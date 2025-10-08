@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { withCORS } from "@/lib/cors";
 import connectDB from "@/lib/db";
 import Task from "@/lib/models/task";
@@ -15,12 +16,28 @@ export async function GET(req: NextRequest) {
     const createdAt = createdAtParam ? new Date(createdAtParam) : null;
     const skip = (page - 1) * limit;
 
+    // 🔹 Get current user info from custom header
+    const userHeader = req.headers.get("user");
+    let currentUserId: string | null = null;
+    let currentUserRole: string | null = null;
+
+    if (userHeader) {
+      try {
+        const user = JSON.parse(userHeader); // expect JSON string
+        currentUserId = user.id;
+        currentUserRole = user.role;
+      } catch (err) {
+        console.error("Invalid Users header:", err);
+      }
+    }
+
     // 🔹 Build query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const query: any = {};
+
     if (search) {
       query.title = { $regex: search, $options: "i" };
     }
+
     if (createdAt) {
       const start = new Date(createdAt);
       start.setHours(0, 0, 0, 0);
@@ -29,16 +46,22 @@ export async function GET(req: NextRequest) {
       query.scheduledDate = { $gte: start, $lte: end };
     }
 
-    // 🔹 Await the query result
+    // 🔹 Filter tasks for Member role
+    if (currentUserRole === "Member" && currentUserId) {
+      query.assignedTo = currentUserId;
+    }
+
+    // 🔹 Fetch tasks
     const tasks = await Task.find(query)
       .skip(skip)
       .limit(limit)
-      .lean(); // lean() returns plain JS objects (better for JSON)
+      .populate("assignedTo", "firstName lastName email role")
+      .lean();
 
     const total = await Task.countDocuments(query);
 
-    const response = NextResponse.json(
-      {
+    return withCORS(
+      NextResponse.json({
         data: tasks,
         pagination: {
           total,
@@ -46,16 +69,12 @@ export async function GET(req: NextRequest) {
           limit,
           totalPages: Math.ceil(total / limit),
         },
-      },
-      { status: 200 }
+      }, { status: 200 })
     );
-    return withCORS(response);
   } catch (error) {
-    const response = NextResponse.json(
-      { message: "Error fetching Tasks", error: String(error) },
-      { status: 500 }
+    return withCORS(
+      NextResponse.json({ message: "Error fetching Tasks", error: String(error) }, { status: 500 })
     );
-    return withCORS(response);
   }
 }
 
@@ -63,4 +82,3 @@ export async function GET(req: NextRequest) {
 export async function OPTIONS() {
   return withCORS(NextResponse.json({}, { status: 200 }));
 }
-

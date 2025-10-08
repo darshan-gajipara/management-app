@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { useForm, Controller } from "react-hook-form";
 import { CalendarIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,7 +22,6 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTaskStore } from "@/store/useTaskStore";
 import LoaderComponent from "@/components/loader/page";
-import { useState } from "react";
 
 type TaskForm = {
     title: string;
@@ -30,6 +29,14 @@ type TaskForm = {
     group: string;
     currentStatus: string;
     scheduledDate: Date;
+    assignedTo?: string;
+};
+
+type User = {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
 };
 
 type Props = {
@@ -41,6 +48,7 @@ type Props = {
 export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props) {
     const { addtask, getAllTasks, updateTask, loading } = useTaskStore();
     const [open, setOpen] = useState(false);
+    const [members, setMembers] = useState<User[]>([]); // ✅ users with role Member
     const {
         register,
         handleSubmit,
@@ -49,34 +57,43 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
         formState: { errors },
     } = useForm<TaskForm>();
 
+    // Fetch users with role "Member"
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
+        axios
+            .get(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/user/getAll?role=Member`, config)
+            .then((res) => {
+                setMembers(res.data); // assuming API returns array of users
+            })
+            .catch((err) => console.error(err));
+    }, []);
+
+    // Fetch task data if editing
     useEffect(() => {
         if (!taskID) return;
 
         const token = localStorage.getItem("token");
-
-        const config = token
-            ? {
-                headers: { Authorization: `Bearer ${token}` },
-            }
-            : {};
+        const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
         axios
             .get(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/task/get/${taskID}`, config)
             .then((res) => {
-                console.log(res.data);
-                const report = res.data;
-                setValue("title", report.title);
-                setValue("description", report.description);
-                setValue("group", report.group);
-                setValue("currentStatus", report.currentStatus);
-                setValue("scheduledDate", new Date(report.scheduledDate));
+                const task = res.data;
+
+                setValue("title", task.title);
+                setValue("description", task.description);
+                setValue("group", task.group);
+                setValue("currentStatus", task.currentStatus);
+                setValue("scheduledDate", new Date(task.scheduledDate));
+                setValue("assignedTo", task.assignedTo); // 👈 set assigned user
             })
             .catch((err) => console.log(err));
     }, [taskID, setValue]);
 
     const onSubmit = async (data: TaskForm) => {
         const localDate = new Date(data.scheduledDate);
-        // remove timezone offset effect
         const correctedDate = new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000);
 
         const payload = {
@@ -92,11 +109,8 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
 
         await getAllTasks("", 1, 10, date ? new Date(date) : undefined);
 
-        if (closeBtnRef?.current) {
-            closeBtnRef.current.click();
-        }
+        if (closeBtnRef?.current) closeBtnRef.current.click();
     };
-
 
     return (
         <div className="w-full">
@@ -108,18 +122,14 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
                     <div className="grid gap-2">
                         <Label>Title</Label>
                         <Input {...register("title", { required: true })} type="text" />
-                        {errors.title && (
-                            <p className="text-red-500 text-sm">Title is required</p>
-                        )}
+                        {errors.title && <p className="text-red-500 text-sm">Title is required</p>}
                     </div>
 
-                    {/* description */}
+                    {/* Description */}
                     <div className="grid gap-2">
                         <Label>Description</Label>
                         <Textarea {...register("description", { required: true })} />
-                        {errors.description && (
-                            <p className="text-red-500 text-sm">Description is required</p>
-                        )}
+                        {errors.description && <p className="text-red-500 text-sm">Description is required</p>}
                     </div>
 
                     {/* Group */}
@@ -143,12 +153,10 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
                                 </Select>
                             )}
                         />
-                        {errors.group && (
-                            <p className="text-red-500 text-sm">Group is required</p>
-                        )}
+                        {errors.group && <p className="text-red-500 text-sm">Group is required</p>}
                     </div>
 
-                    {/* CurrentStatus */}
+                    {/* Current Status */}
                     <div className="grid gap-2">
                         <Label>Current Status</Label>
                         <Controller
@@ -169,74 +177,77 @@ export default function CreateTaskComponent({ taskID, closeBtnRef, date }: Props
                                 </Select>
                             )}
                         />
-                        {errors.currentStatus && (
-                            <p className="text-red-500 text-sm">
-                                Current Status is required
-                            </p>
-                        )}
+                        {errors.currentStatus && <p className="text-red-500 text-sm">Current Status is required</p>}
                     </div>
 
-                    {/* Scheduled Date (Date Picker) */}
+                    {/* Assigned To */}
+                    <div className="grid gap-2">
+                        <Label>Assign To</Label>
+                        <Controller
+                            name="assignedTo"
+                            control={control}
+                            render={({ field }) => (
+                                <Select onValueChange={field.onChange} value={field.value || ""}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a member" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {members.map((member) => (
+                                            <SelectItem key={member._id} value={member._id}>
+                                                {member.firstName} {member.lastName} ({member.email})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                    </div>
+
+                    {/* Scheduled Date */}
                     <div className="grid gap-2">
                         <Label>Scheduled Date</Label>
                         <Controller
                             name="scheduledDate"
                             control={control}
                             rules={{ required: true }}
-                            render={({ field }) => {
-
-                                return (
-                                    <Popover open={open} onOpenChange={setOpen}>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                style={{ background: "#1e293b", color: "white" }}
-                                                className={cn(
-                                                    "w-full justify-start text-left font-normal",
-                                                    !field.value && "text-muted-foreground"
-                                                )}
-                                                onClick={() => setOpen(true)}
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {field.value ? (
-                                                    format(field.value, "PPP")
-                                                ) : (
-                                                    <span>Pick a date</span>
-                                                )}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={(date) => {
-                                                    field.onChange(date);
-                                                    setOpen(false); // ✅ close popup when date selected
-                                                }}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                );
-                            }}
+                            render={({ field }) => (
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            style={{ background: "#1e293b", color: "white" }}
+                                            className={cn(
+                                                "w-full justify-start text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={field.value}
+                                            onSelect={(date) => {
+                                                field.onChange(date);
+                                                setOpen(false);
+                                            }}
+                                            initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            )}
                         />
-                        {errors.scheduledDate && (
-                            <p className="text-red-500 text-sm">Scheduled date is required</p>
-                        )}
+                        {errors.scheduledDate && <p className="text-red-500 text-sm">Scheduled date is required</p>}
                     </div>
 
                     {/* Buttons */}
                     <div className="flex gap-2 justify-end pt-4">
-                        {taskID ? (
-                            <Button type="submit" variant="secondary">
-                                Update
-                            </Button>
-                        ) : (
-                            <Button type="submit" variant="secondary">
-                                Create
-                            </Button>
-                        )}
+                        <Button type="submit" variant="secondary">
+                            {taskID ? "Update" : "Create"}
+                        </Button>
                     </div>
                 </form>
             </CardContent>

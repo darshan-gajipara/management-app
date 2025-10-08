@@ -33,12 +33,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const router = useRouter();
     const [user, setUser] = useState<string>("");
+    const [userRole, setUserRole] = useState<string>("");
+    const [userWorkSpace, setUserWorkSpace] = useState<string>("");
+
 
     useEffect(() => {
         const fetchUser = async () => {
             const data = await getCurrentUser();
             const user = data?.firstName + '  ' + data?.lastName
             setUser(user);
+            setUserRole(data?.role || "");
+            setUserWorkSpace(data?.workspace)
         };
         fetchUser();
     }, [])
@@ -50,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const handleLogout = async () => {
         localStorage.removeItem("token");
-
+        await fetch("/api/logout", { method: "POST", credentials: "include" });
         try {
             await signOut({ redirect: false });
         } catch (error) {
@@ -95,31 +100,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             {sidebarOpen && <span>Dashboard</span>}
                         </Link>
 
-                        <Link
-                            href="/dashboard/reports"
-                            className={cn(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 transition",
-                                pathname === "/dashboard/reports"
-                                    ? "bg-blue-800 text-white"
-                                    : "hover:bg-[#334155] text-gray-300"
-                            )}
-                        >
-                            <Table size={20} />
-                            {sidebarOpen && <span>Reports</span>}
-                        </Link>
+                        {userRole === "Admin" && (
+                            <>
+                                <Link
+                                    href="/dashboard/reports"
+                                    className={cn(
+                                        "flex items-center gap-2 rounded-lg px-3 py-2 transition",
+                                        pathname === "/dashboard/reports"
+                                            ? "bg-blue-800 text-white"
+                                            : "hover:bg-[#334155] text-gray-300"
+                                    )}
+                                >
+                                    <Table size={20} />
+                                    {sidebarOpen && <span>Reports</span>}
+                                </Link>
 
-                        <Link
-                            href="/dashboard/task"
-                            className={cn(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 transition",
-                                pathname === "/dashboard/task"
-                                    ? "bg-blue-800 text-white"
-                                    : "hover:bg-[#334155] text-gray-300"
-                            )}
-                        >
-                            <CalendarCheck  size={20} />
-                            {sidebarOpen && <span>Task</span>}
-                        </Link>
+                                <Link
+                                    href="/dashboard/task"
+                                    className={cn(
+                                        "flex items-center gap-2 rounded-lg px-3 py-2 transition",
+                                        pathname === "/dashboard/task"
+                                            ? "bg-blue-800 text-white"
+                                            : "hover:bg-[#334155] text-gray-300"
+                                    )}
+                                >
+                                    <CalendarCheck size={20} />
+                                    {sidebarOpen && <span>Task</span>}
+                                </Link>
+                            </>
+                        )}
 
                         <Link
                             href="/dashboard/taskView"
@@ -130,7 +139,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     : "hover:bg-[#334155] text-gray-300"
                             )}
                         >
-                            <CalendarCheck2  size={20} />
+                            <CalendarCheck2 size={20} />
                             {sidebarOpen && <span>Task View</span>}
                         </Link>
 
@@ -143,11 +152,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     : "hover:bg-[#334155] text-gray-300"
                             )}
                         >
-                            <ListTodo  size={20} />
+                            <ListTodo size={20} />
                             {sidebarOpen && <span>Task Info</span>}
                         </Link>
 
-                        
+
                     </nav>
                 </ScrollArea>
             </aside>
@@ -159,7 +168,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <h2 className="text-lg font-semibold">{getPageTitle(pathname)}</h2>
                     <div className="flex items-center gap-4">
                         <div className="text-lg font-semibold">
-                            Hello,&nbsp;welcome back <span className="text-green-600">{session ? session.user?.name : user}</span>
+                            Hello,&nbsp;welcome back <span className="text-green-600">{session ? session.user?.name : user}</span>&nbsp;
+                            (<span className="text-green-600"> {userRole  + ' of ' + userWorkSpace} </span>)
                         </div>
 
 

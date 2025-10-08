@@ -1,5 +1,5 @@
 import { withCORS } from "@/lib/cors";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Task from "@/lib/models/task";
 import Report from "@/lib/models/report";
@@ -13,12 +13,33 @@ function isSameLocalDate(date1: Date, date2: Date) {
   );
 }
 
-export async function GET() {
+export async function GET(req:NextRequest) {
   try {
     await connectDB();
 
     // ====== TASK DATA ======
-    const tasks = await Task.find();
+    const userHeader = req.headers.get("user");
+    let currentUserId: string | null = null;
+    let currentUserRole: string | null = null;
+
+    if (userHeader) {
+      try {
+        const user = JSON.parse(userHeader); // expect JSON string
+        currentUserId = user.id;
+        currentUserRole = user.role;
+      } catch (err) {
+        console.error("Invalid Users header:", err);
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: any = {};
+
+    // 🔹 Filter tasks for Member role
+    if (currentUserRole === "Member" && currentUserId) {
+      query.assignedTo = currentUserId;
+    }
+    
+    const tasks = await Task.find(query);
     const today = new Date();
 
     let completed = 0;

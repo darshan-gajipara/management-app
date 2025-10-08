@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Eye } from "lucide-react";
-import { Task, useTaskStore } from "@/store/useTaskStore";
+import { Task, TaskRes, useTaskStore } from "@/store/useTaskStore";
 import { useEffect, useRef, useState } from "react";
 import LoaderComponent from "@/components/loader/page";
 import {
@@ -59,7 +59,7 @@ const isSameLocalDate = (date1: Date, date2: Date) => {
 };
 
 // ✅ Calculate progress + stats for today's tasks (local timezone)
-const calculateTodayStats = (tasks: Record<string, Task[]>) => {
+const calculateTodayStats = (tasks: Record<string, TaskRes[]>) => {
     const today = new Date();
     const allTasks = Object.values(tasks).flat();
 
@@ -86,7 +86,7 @@ const calculateTodayStats = (tasks: Record<string, Task[]>) => {
 export default function TaskBoard() {
     const { taskResponse, getAllTasks, updateTask, loading } = useTaskStore();
 
-    const [localTasks, setLocalTasks] = useState<Record<string, Task[]>>({});
+    const [localTasks, setLocalTasks] = useState<Record<string, TaskRes[]>>({});
     const [todayStats, setTodayStats] = useState({
         total: 0,
         completed: 0,
@@ -106,7 +106,7 @@ export default function TaskBoard() {
     // ✅ Group and calculate stats when tasks change
     useEffect(() => {
         if (taskResponse?.data) {
-            const grouped: Record<string, Task[]> = {};
+            const grouped: Record<string, TaskRes[]> = {};
             statusColumns.forEach((status) => {
                 grouped[status] = taskResponse.data.filter(
                     (t) => t.currentStatus === status
@@ -186,7 +186,15 @@ export default function TaskBoard() {
 
             // ✅ Update backend
             const updatedTask = { ...task, currentStatus: destinationColumn };
-            updateTask(taskId, updatedTask);
+            const taskPayload = {
+                title: updatedTask?.title,
+                description: updatedTask?.description,
+                group: updatedTask?.group,
+                currentStatus: updatedTask?.currentStatus,
+                scheduledDate: updatedTask?.scheduledDate,
+                assignedTo: updatedTask?.assignedTo?._id
+            }
+            updateTask(taskId, taskPayload);
         }
     };
 
@@ -282,7 +290,7 @@ function Column({
 }: {
     id: string;
     title: string;
-    tasks: Task[];
+    tasks: TaskRes[];
 }) {
     const { setNodeRef } = useDroppable({ id });
 
@@ -310,7 +318,7 @@ function Column({
 /* ========================
    Task Card Component
 ======================== */
-function SortableTaskCard({ task }: { task: Task }) {
+function SortableTaskCard({ task }: { task: TaskRes }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: task._id,
     });
@@ -345,6 +353,7 @@ function SortableTaskCard({ task }: { task: Task }) {
                                     <div className="grid gap-2">
                                         <p><strong className="text-blue-400">Title:</strong> <br />{task.title}</p>
                                         <p><strong className="text-blue-400">Description:</strong> <br />{task.description}</p>
+                                        <p><strong className="text-blue-400">Assigned To:</strong> <br />{(task.assignedTo?.firstName) + " " + (task.assignedTo?.lastName)}</p>
                                         <p><strong className="text-blue-400">Group:</strong> <br />{task.group}</p>
                                         <p><strong className="text-blue-400">Current Status:</strong> <br />{task.currentStatus}</p>
                                         <p><strong className="text-blue-400">Scheduled Date:</strong> <br />{dateFormat(task.scheduledDate)}</p>

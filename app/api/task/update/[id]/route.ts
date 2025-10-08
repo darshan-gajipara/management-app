@@ -8,17 +8,16 @@ export async function PUT(
     context: { params: Promise<{ id: string }> }
 ) {
     try {
-
         const { id } = await context.params;
 
         if (!id) {
-            const response = NextResponse.json({ message: "Blog id is required" }, { status: 400 });
+            const response = NextResponse.json({ message: "Task id is required" }, { status: 400 });
             return withCORS(response);
         }
 
+        const { title, description, group, currentStatus, scheduledDate, assignedTo } = await req.json();
 
-        const { title, description, group, currentStatus, scheduledDate } = await req.json();
-
+        // Validate required fields
         if (!title || !description || !group || !scheduledDate) {
             const response = NextResponse.json(
                 { message: "All fields are required" },
@@ -29,22 +28,22 @@ export async function PUT(
 
         await connectDB();
 
+        // Find the task
         const task = await Task.findById(id);
         if (!task) {
             const response = NextResponse.json({ message: "Task not found" }, { status: 404 });
             return withCORS(response);
         }
 
-        const updatedTsk = await Task.findByIdAndUpdate(
+        // Update task
+        const updatedTask = await Task.findByIdAndUpdate(
             id,
-            { title, description, group, currentStatus, scheduledDate },
+            { title, description, group, currentStatus, scheduledDate, assignedTo }, // 👈 added assignedTo
             { new: true }
-        );
+        ).populate("assignedTo", "firstName lastName email role"); // 👈 optional: populate assigned user
 
-        const response = NextResponse.json(updatedTsk, { status: 200 });
+        const response = NextResponse.json(updatedTask, { status: 200 });
         return withCORS(response);
-
-
 
     } catch (error) {
         const response = NextResponse.json(
@@ -54,7 +53,6 @@ export async function PUT(
         return withCORS(response);
     }
 }
-
 
 // Handle preflight requests for CORS
 export async function OPTIONS() {

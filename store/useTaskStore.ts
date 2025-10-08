@@ -14,8 +14,27 @@ export type Task = {
     __v: { $numberInt: string };
 }
 
+export type TaskRes = {
+  _id: string;
+  title: string;
+  description: string;
+  group: string;
+  currentStatus: string;
+  scheduledDate: string; // ISO date string
+  assignedTo?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+};
+
 export interface TaskApiResponse {
-    data: Task[];
+    data: TaskRes[];
     pagination: {
         total: number;
         page: number;

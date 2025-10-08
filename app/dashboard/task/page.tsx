@@ -163,6 +163,7 @@ export default function TaskPage() {
                                                 <div className="grid gap-2">
                                                     <p><strong className="text-blue-400">Title:</strong> <br />{task.title}</p>
                                                     <p><strong className="text-blue-400">Description:</strong> <br />{task.description}</p>
+                                                    <p><strong className="text-blue-400">Assigned To:</strong> <br />{(task.assignedTo?.firstName) + " " + (task.assignedTo?.lastName)}</p>
                                                     <p><strong className="text-blue-400">Group:</strong> <br />{task.group}</p>
                                                     <p><strong className="text-blue-400">Current Status:</strong> <br />{task.currentStatus}</p>
                                                     <p><strong className="text-blue-400">Scheduled Date:</strong>  <br />{dateFormat(task.scheduledDate)}</p>

@@ -5,8 +5,9 @@ import Task from "@/lib/models/task";
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, description, group, currentStatus, scheduledDate } = await req.json();
+    const { title, description, group, currentStatus, scheduledDate, assignedTo } = await req.json();
 
+    // Validate required fields
     if (!title || !description || !group || !scheduledDate) {
       const response = NextResponse.json(
         { message: "All fields are required" },
@@ -16,8 +17,21 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
-    const newTask = new Task({ title, description, group, currentStatus, scheduledDate });
+
+    // ✅ Create and save new task
+    const newTask = new Task({
+      title,
+      description,
+      group,
+      currentStatus,
+      scheduledDate,
+      assignedTo,
+    });
+
     const task = await newTask.save();
+
+    // ✅ Populate assigned user (optional)
+    await task.populate("assignedTo", "firstName lastName email role");
 
     const response = NextResponse.json(task, { status: 200 });
     return withCORS(response);
@@ -30,7 +44,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Handle preflight requests (important for CORS)
 export async function OPTIONS() {
   return withCORS(NextResponse.json({}, { status: 200 }));
 }

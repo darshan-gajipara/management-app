@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
-import { Task, TaskRes, useTaskStore } from "@/store/useTaskStore";
+import { TaskRes, useTaskStore } from "@/store/useTaskStore";
 import { useEffect } from "react";
 import LoaderComponent from "@/components/loader/page";
 

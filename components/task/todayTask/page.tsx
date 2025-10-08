@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock } from "lucide-react";
 import { format } from "date-fns";
-import { Task, useTaskStore } from "@/store/useTaskStore";
+import { Task, TaskRes, useTaskStore } from "@/store/useTaskStore";
 import { useEffect } from "react";
 import LoaderComponent from "@/components/loader/page";
 
@@ -86,7 +86,7 @@ export default function TodayTaskComponent() {
 }
 
 // Task Card Component
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task }: { task: TaskRes }) {
     return (
         <Card className="rounded-2xl shadow-sm bg-slate-800 text-white">
             <CardContent className="p-4 space-y-2">

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,6 +27,17 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { getPageTitle } from "@/lib/pageTitleHelper";
+import { Bell } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import dateFormat from "@/lib/util/dateFormat";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { data: session } = useSession();
@@ -35,7 +47,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [user, setUser] = useState<string>("");
     const [userRole, setUserRole] = useState<string>("");
     const [userWorkSpace, setUserWorkSpace] = useState<string>("");
-
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [unreadCount, setUnreadCount] = useState<number>(0);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -47,6 +60,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         };
         fetchUser();
     }, [])
+
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const res = await AxiosApi.get("/notifications");
+                const data = res.data || [];
+                setNotifications(data);
+                setUnreadCount(data.filter((n: any) => !n.isRead).length);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
+            }
+        };
+
+        fetchNotifications();
+    }, []);
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            // ✅ API call to mark all as read
+            await AxiosApi.patch("/notifications/mark-all-read", {}, {
+            });
+
+            // ✅ Update frontend state instantly
+            setNotifications((prev) =>
+                prev.map((n) => ({ ...n, isRead: true }))
+            );
+            setUnreadCount(0);
+        } catch (error) {
+            console.error("Error marking notifications as read:", error);
+        }
+    };
+
 
     const getCurrentUser = async () => {
         const res = await AxiosApi.get('/currentUser');
@@ -166,14 +211,79 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Navbar */}
                 <header className="flex items-center justify-between bg-[#111827] px-6 py-4 border-b border-gray-700">
                     <h2 className="text-lg font-semibold">{getPageTitle(pathname)}</h2>
+
                     <div className="flex items-center gap-4">
+                        {/* Greeting */}
                         <div className="text-lg font-semibold">
-                            Hello,&nbsp;welcome back <span className="text-green-600">{session ? session.user?.name : user}</span>&nbsp;
-                            (<span className="text-green-600"> {userRole  + ' of ' + userWorkSpace} </span>)
+                            Hello,&nbsp;welcome back{" "}
+                            <span className="text-green-600">
+                                {session ? session.user?.name : user}
+                            </span>
+                            &nbsp;
+                            (<span className="text-green-600">
+                                {userRole + " of " + userWorkSpace}
+                            </span>)
                         </div>
 
+                        {/* 🔔 Notification Dropdown */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="relative p-1">
+                                    <Bell size={18} />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-0 right-0 block h-2 w-2 bg-red-500 rounded-full"></span>
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+
+                            {unreadCount > 0 && (<DropdownMenuContent
+                                align="end"
+                                className="w-80 bg-[#1e293b] text-white border border-gray-700"
+                            >
+                                <DropdownMenuLabel className="text-gray-300">
+                                    Notifications
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-gray-700" />
+
+                                {notifications.length === 0 ? (
+                                    <div className="p-3 text-sm text-gray-400">No notifications found.</div>
+                                ) : (
+                                    notifications.map((notif) => (
+                                        <DropdownMenuItem
+                                            key={notif._id}
+                                            className="hover:bg-[#334155] cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-8 w-8">
+                                                    <AvatarFallback className="text-black">NT</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="text-sm font-medium">{notif.title}</p>
+                                                    <p className="text-xs text-gray-400">{notif.message}</p>
+                                                    <p className="text-[10px] text-gray-500 mt-1">
+                                                        {dateFormat(notif.createdAt)}  {new Date(notif.createdAt).toLocaleTimeString([], {
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                            second: "2-digit",
+                                                            hour12: true,
+                                                        })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </DropdownMenuItem>
+                                    ))
+                                )}
+
+                                <DropdownMenuSeparator className="bg-gray-700" />
+                                <DropdownMenuItem className="text-blue-400 hover:bg-[#334155] justify-center"
+                                    onClick={handleMarkAllAsRead}>
+                                    View All Notifications
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>)}
+                        </DropdownMenu>
 
 
+                        {/* 🚪 Logout Button */}
                         <AlertDialog>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -198,10 +308,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-
-
                     </div>
                 </header>
+
 
                 {/* Content */}
                 <main className="flex-1 overflow-y-auto p-6 bg-[#0f172a]">{children}</main>

@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
             username: user.username,
             role: user.role,
             id: user._id.toString(),
-            workspace: user?.workspaceId?.name
+            workspace: user?.workspaceId?.name,
+            workspaceId: user?.workspaceId?._id.toString()
         };
         
         // Generate JWT Token

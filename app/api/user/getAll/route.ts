@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import connectDB from "@/lib/db";
 import User from "@/lib/models/user";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,8 +17,24 @@ export async function GET(req: NextRequest) {
             );
         }
 
+        const userHeader = req.headers.get("user");
+        let workSpaceId: string | null = null;
+        if (userHeader) {
+            try {
+                const user = JSON.parse(userHeader);
+                workSpaceId = user?.workspaceId
+            } catch (err) {
+                console.error("Invalid Users header:", err);
+            }
+        }
+
+        const query: any = { role };
+        if (workSpaceId) {
+            query.workspaceId = workSpaceId;
+        }
+
         // Find users by role
-        const users = await User.find({ role }).select("firstName lastName email role");
+        const users = await User.find(query).select("firstName lastName email role");
 
         return withCORS(NextResponse.json(users, { status: 200 }));
     } catch (error) {

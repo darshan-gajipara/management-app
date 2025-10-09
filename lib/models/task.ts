@@ -27,6 +27,12 @@ const TaskSchema = new mongoose.Schema(
       ref: "Users",
       required: false, // you can make it required: true if needed
     },
+
+    workspaceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "WorkSpaces",
+      default: null,
+    },
   },
   { timestamps: true }
 );

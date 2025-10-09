@@ -21,12 +21,14 @@ export async function GET(req:NextRequest) {
     const userHeader = req.headers.get("user");
     let currentUserId: string | null = null;
     let currentUserRole: string | null = null;
+    let workspaceId: string | null = null;
 
     if (userHeader) {
       try {
         const user = JSON.parse(userHeader); // expect JSON string
         currentUserId = user.id;
         currentUserRole = user.role;
+        workspaceId = user?.workspaceId
       } catch (err) {
         console.error("Invalid Users header:", err);
       }
@@ -37,6 +39,9 @@ export async function GET(req:NextRequest) {
     // 🔹 Filter tasks for Member role
     if (currentUserRole === "Member" && currentUserId) {
       query.assignedTo = currentUserId;
+    }
+    if(workspaceId) {
+      query.workspaceId = workspaceId
     }
     
     const tasks = await Task.find(query);
